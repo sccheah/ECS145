@@ -1,1 +1,2 @@
-# ECS145
+# ECS145 - Scripting Languages
+
