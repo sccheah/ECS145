@@ -63,7 +63,7 @@ class polynom:
 
         return polynom(list(reversed(result)))
 
-    # derivative
+    # Derivative
     def drv(self):
         result = list(reversed(self.poly))
         for i in range(len(result)):
