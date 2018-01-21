@@ -1,19 +1,40 @@
 import os, sys
+# TODO: test to see if specify directory in another branch
 
-def recursiveFileComparison(nBytes, dirname, file_names):
-    print file_names
-    print nBytes
 
-    for f in file_names:
-        if os.path.isdir(f):
-            nBytes += 1
-            os.path.walk(f, recursiveFileComparison, nBytes)
+def getFiles(flist, relativeDirName, fileNames):
+    # for each file in the directory
+    for f in fileNames:
+        # get the relative path to the file from root directory
+        relativePath = os.path.join(relativeDirName, f)
+        if not (os.path.isdir(str(relativePath))):
+            flist.append(relativePath)
+
 
 #dtree is the directory tree, specified as a character string
 #nBytes is the number of bytes to be used for matching.
 def filePairs(dtree, nBytes):
-    os.path.walk(dtree, recursiveFileComparison, nBytes)
+    flist = []
+    result = []
+    os.path.walk(dtree, getFiles, flist)
+    #print flist
+    for fp1 in range(len(flist)):
+        for fp2 in range(fp1, len(flist)):
+            if not os.path.samefile(flist[fp1], flist[fp2]):
+                file1 = open(str(flist[fp1]))
+                file2 = open(str(flist[fp2]))
 
+                if (file1.read(nBytes) == file2.read(nBytes)):
+                    tup = (str(flist[fp1]), str(flist[fp2]))
+                    result.append(tup)
+
+                file1.close()
+                file2.close()
+
+    for r in result:
+        print r
+        print ''
+    return result
 
 def main():
     # if there is a path arg specified, use as dtree.
@@ -26,6 +47,7 @@ def main():
     except:
         dtree = '.'
         nBytes = 3
+
 
     result = filePairs(dtree, nBytes)
 
