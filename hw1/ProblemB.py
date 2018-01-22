@@ -42,14 +42,17 @@ def filePairs(dtree, nBytes):
 
 def main():
     # if there is a path arg specified, use as dtree.
-    # if there is a number of bytes specified, use as nBytes
     try:
         dtree = sys.argv[1]
-        nBytes = int(sys.argv[2])
     # else, set root to current directory
-    # else, set nBytes to 3
     except:
         dtree = '.'
+
+    # if there is a number of bytes specified, use as nBytes
+    try:
+        nBytes = int(sys.argv[2])
+    # else, set nBytes to 3
+    except:
         nBytes = 3
 
     # result will hold list of tuples of pairs of files w/ rel directories
