@@ -90,26 +90,28 @@ class polynom:
 
         return upper - lower
 
+def main():
+    p1 = polynom([2,3,0,1])
+    p2 = polynom([1,1,2])
+    p3 = polynom([2,1])
+    p4 = polynom([1,1])
+    print "Poly 1: " + str(p1.poly)
+    print "Poly 2: " + str(p2.poly)
+    p = p1 + p2
+    print "P1 + P2: " + str(p.poly)
+    p = p1 - p2
+    print "P1 - P2: " + str(p.poly)
+    p = p1 * p2
+    print "P1 * P2: " + str(p.poly)
+    p = p1 * p3
+    print "P1 * P3: " + str(p.poly)
+    p = p3 * p4
+    print "P3 * P4: " + str(p.poly)
+    p = p.drv()
+    print "Derivative of P: " + str(p.poly)
+    p = p.intg(1, 5)
+    print "Integral of P from 1 to 5: " + str(p)
 
-p1 = polynom([2,3,0,1])
-p2 = polynom([1,1,2])
-p3 = polynom([2,1])
-p4 = polynom([1,1])
-print p2.poly
-print "Poly 1: " + str(p1.poly)
-print "Poly 2: " + str(p2.poly)
-p = p1 + p2
-print "P1 + P2: " + str(p.poly)
-p = p1 - p2
-print "P1 - P2: " + str(p.poly)
-p = p1 * p2
-print "P1 * P2: " + str(p.poly)
-p = p1 * p3
-print "P1 * P3: " + str(p.poly)
-p = p3 * p4
-print "P3 * P4: " + str(p.poly)
-p = p.drv()
-print "Derivative of P: " + str(p.poly)
-p = p.intg(1, 5)
-print "Integral of P from 1 to 5: " + str(p)
-print p2.poly
+
+if __name__ == '__main__':
+    main()
