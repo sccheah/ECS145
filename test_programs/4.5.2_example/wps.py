@@ -19,11 +19,20 @@ def main():
     # send w or ps command to server
     s.send(sys.argv[3])
 
-    # create "file-like object" flo
-    flo = s.makefile('r', 0) # read-only, unbuffered
+
+#     create "file-like object" flo
+#    flo = s.makefile('r', 0) # read-only, unbuffered
     # now can call readlines() on flo, and also use the fact that
     # stdout is a file-like object too
-    sys.stdout.writelines(flo.readlines())
+#    sys.stdout.writelines(flo.readlines())
+
+
+    flo = s.makefile('r', 0) # read-only, unbuffered
+
+    # best not to use readlines() directly, as this may cause the receiving end
+    #   to wait until sender closes connection, so that "file" is complete"
+    for line in flo:
+        sys.stdout.writelines(line)
 
 if __name__ == '__main__':
     main()
