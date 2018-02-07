@@ -14,11 +14,8 @@ def dopen(fileName, accessMode, buffering):
     buffering = str(buffering)      # cannot send int through socket, so cast to str
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    # add code to do multiple hosts/clients.
-    # for now assume singular connection
-
-    s.connect((hostList, portNum))      # connect with server
+    host = hostList[hash(fileName) % len(hostList)]
+    s.connect((host, portNum))
 
     delim = " "
     seq = ("dopen", fileName, accessMode, buffering)
@@ -41,9 +38,8 @@ def dread(fileName, numBytes):
     numBytes = str(numBytes)
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # add code to do multiple hosts/clients.
-    # for now assume singular connection
-    s.connect((hostList, portNum))
+    host = hostList[hash(fileName) % len(hostList)]
+    s.connect((host, portNum))
 
     delim = " "
     seq = ("dread", fileName, numBytes)
@@ -67,9 +63,8 @@ def dseek(fileName, numBytes):      # not required; writing for debugging
     numBytes = str(numBytes)
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # add code to do multiple hosts/clients.
-    # for now assume singular connection
-    s.connect((hostList, portNum))
+    host = hostList[hash(fileName) % len(hostList)]
+    s.connect((host, portNum))
 
     delim = " "
     seq = ("dseek", fileName, numBytes)
@@ -88,9 +83,8 @@ def dwrite(fileName, my_str):
     my_str = str(my_str)
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # add code to do multiple hosts/clients.
-    # for now assume singular connection
-    s.connect((hostList, portNum))
+    host = hostList[hash(fileName) % len(hostList)]
+    s.connect((host, portNum))
 
     delim = " "
     seq = ("dwrite", fileName, my_str)
@@ -110,9 +104,8 @@ def dclose(fileName):
     global portNum
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # add code to do multiple hosts/clients.
-    # for now assume singular connection
-    s.connect((hostList, portNum))
+    host = hostList[hash(fileName) % len(hostList)]
+    s.connect((host, portNum))
 
     delim = " "
     seq = ("dclose", fileName)

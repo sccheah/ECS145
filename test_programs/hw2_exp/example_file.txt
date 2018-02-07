@@ -1,1 +1,2 @@
-bye im writing heret and this should workbye im writing herebye im writing hereThis string should append to the file
+hello there how are you doing
+This string should append to the fileThis string should append to the fileThis string should append to the file

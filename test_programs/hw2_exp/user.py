@@ -1,6 +1,10 @@
 import client
 
-client.dInit("localhost", 2500)
+client.dInit(["localhost"], 2500)
+
+client.dopen("test_write.txt", "w+", 0)
+client.dwrite("test_write.txt", "hello there")
+client.dclose("test_write.txt")
 
 client.dopen("example_file.txt", 'r+', 0)
 data = client.dread("example_file.txt", '')        # second arg is the size of bytes

@@ -1,6 +1,8 @@
 import os
-import threading
-import thread
+import socket
+
+# TODO: test remotely in csif (check if hashing works); go through code and make it more efficient
+# TODO: comment code, recheck to see if going according to hw specs, README 
 
 def start_servers(hostName, portNum):
     cmd = str('ssh sccheah@' + hostName + ' python /HwkIIServer.py ' + str(portNum))
@@ -35,76 +37,119 @@ def dInit(host_list, port_num):
     hostList = host_list
     portNum = port_num
 
-# read from file
-def dread(fp, bytes):
-    global hostList
-    global portNum
-
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    s.connect((hostList, portNum))
-    s.send("dread")
-    s.send(fp)
-    s.send(bytes)
-
-    data = s.recv(bytes)
-    s.close()
-    return data
-
-# write to file
-def dwrite(fp, fileName):
-    global hostList
-    global portNum
-
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    s.connect((hostList, portNum))
-    s.send("dwrite")
-    s.send(fp)
-    s.send(fileName)
-
-    # dont need to recv() anything
-    s.close()           # close socket
-
-    return
-
-# open file
 def dopen(fileName, accessMode, buffering):
     global hostList
     global portNum
+    buffering = str(buffering)      # cannot send int through socket, so cast to str
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    host = hostList[hash(fileName) % len(hostList)]
+    s.connect((host, portNum))
 
-    # add code to do multiple hosts/clients.
-    # for now assume singular connection
+    delim = " "
+    seq = ("dopen", fileName, accessMode, buffering)
+    instructions = delim.join(seq)
+    #print instructions
 
-    s.connect((hostList, portNum))      # connect with server
-    s.send("dopen")                     # tell server what func to run
-    s.send(fileName)                    # send filename to server
-    s.send(accessMode)                  # send accessMode to server
-    s.send(buffering)                   # send buffering code to server
+    s.send(instructions)
 
-    fp = s.recv(1024)   # receive up to 1024 bytes
-                        # (ASSUMING that is enough for one recv())
+    confirm = s.recv(1024)   # receive up to 1024 bytes
+
+
+    print confirm
     s.close()
-    return fp
 
-# TODO: close file
-def dclose(fp):
+    return
+
+def dread(fileName, numBytes):
+    global hostList
+    global portNum
+    numBytes = str(numBytes)
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    host = hostList[hash(fileName) % len(hostList)]
+    s.connect((host, portNum))
+
+    delim = " "
+    seq = ("dread", fileName, numBytes)
+    instructions = delim.join(seq)
+    s.send(instructions)
+
+    data = s.recv(1024)
+    while True:
+        tmp = s.recv(1024)
+
+        if not tmp:
+            break
+
+        data += tmp
+
+    if data:
+        print "Successfully received data from " + fileName + "!"
+    else:
+        print "Data retrieval unsuccessful from " + fileName + "!"
+
+    s.close()
+    return data
+
+
+def dseek(fileName, numBytes):      # not required; writing for debugging
+    global hostList
+    global portNum
+    numBytes = str(numBytes)
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    host = hostList[hash(fileName) % len(hostList)]
+    s.connect((host, portNum))
+
+    delim = " "
+    seq = ("dseek", fileName, numBytes)
+    instructions = delim.join(seq)
+    s.send(instructions)
+
+    s.close()
+
+    return
+
+
+def dwrite(fileName, my_str):
+    global hostList
+    global portNum
+    my_str = str(my_str)
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    host = hostList[hash(fileName) % len(hostList)]
+    s.connect((host, portNum))
+
+    delim = " "
+    seq = ("dwrite", fileName, my_str)
+    instructions = delim.join(seq)
+
+    s.send(instructions)
+    confirm = s.recv(1024)
+
+    print confirm
+    s.close()
+
+    return
+
+
+def dclose(fileName):
     global hostList
     global portNum
 
-    # maybe use reference to object to know which file to close
-    # or just automatically close files in server each time...
-
-    # try to send fp reference? relevant if we keep fp in server-side open
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((hostList, portNum))
+    host = hostList[hash(fileName) % len(hostList)]
+    s.connect((host, portNum))
 
-    s.send("dclose")            # tell server what func to run
-    s.send(fp)                # send which file to close
+    delim = " "
+    seq = ("dclose", fileName)
+    instructions = delim.join(seq)
 
-    # dont have to recv(?)
+    s.send(instructions)
+    confirm = s.recv(1024)
+
+    print confirm
     s.close()
 
     return

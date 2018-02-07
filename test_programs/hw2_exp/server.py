@@ -5,7 +5,6 @@ import sys
 # create global dictionary to manipulate file
 file_pointers = {}
 
-
 def dopen(conn, instructions):
     global file_pointers
 

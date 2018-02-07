@@ -1,72 +1,105 @@
-# two clients connect to server; each client sends letter
-# server appends to global str and sends back to client
-# '' means client is dropping out; when clients are gone,
-# server will print final string
-
-# USAGE: python srvr.py port_number
-
 import socket
 import sys
-import threading
 
-class srvr(threading.Thread):
-    # initialize class variables
-    v = ''
-    vlock = threading.Lock()
-    numclntlock = threading.Lock()
-    id = 0      # want to give an ID num to each thread starting at 0
+# create global dictionary to manipulate file
+file_pointers = {}
 
-    def __init__(self, clntsocket):
-        # invoke parent class constructor
-        threading.Thread.__init__(self)
+def dopen(conn, instructions):
+    global file_pointers
 
-        # add instance variables
-        self.myid = srvr.id
-        srvr.id += 1
-        self.myclntsock = clntsocket
+    fileName = instructions[0]
+    accessMode = instructions[1]
+    buffering = instructions[2]
+    fp = open(fileName, accessMode, int(buffering))
+
+    if fp:
+        conn.send("Opened " + fileName + " successfully!")
+    else:
+        conn.send("Failed to open " + fileName)
+
+    file_pointers[fileName] = fp
+
+    return
+
+def dread(conn, instructions):
+    global file_pointers
+
+    fileName = instructions[0]
+    if len(instructions) == 2:
+        numBytes = instructions[1]
+        data = file_pointers[fileName].read(int(numBytes))
+    else:
+        data = file_pointers[fileName].read()
+
+    conn.sendall(data)
+
+    return
+
+def dseek(conn, instructions):
+    global file_pointers
+
+    fileName = instructions[0]
+    numBytes = instructions[1]
+
+    try:
+        file_pointers[fileName].seek(int(numBytes))
+        print "Seeking byte \'" + numBytes + "\' in " + fileName + " successful."
+    except:
+        print "Seeking byte \'" + numBytes + "\' in " + fileName + " failed."
+
+    return
+
+def dwrite(conn, instructions):
+    global file_pointers
+
+    fileName = instructions[0]
+    my_str = " ".join(instructions[1:])
+
+    try:
+        file_pointers[fileName].write(my_str)
+        conn.send("Successfully written to " + fileName + "!")
+    except:
+        conn.send("Failed writing to " + fileName + "!")
+
+    return
 
 
-    # this func is what thread actually runs;
-    # REQUIRED NAME is run();
-    # threading.Thread.start() calls threading.Thread.run()
-    #       which is always overridden, as we are doing here
-    def run(self):
-        while True:
-            # get letter from client
-            k = self.myclntsock.recv(1)
 
-            if k == '':
-                break
+def dclose(conn, instructions):
+    global file_pointers
 
-            # update v in atomic manner
-            srvr.vlock.acquire()
-            srvr.v += k
-            srvr.vlock.release()
+    fileName = instructions[0]
+    file_pointers[fileName].close()
+    del file_pointers[fileName]
 
-            # send v back to client
-            self.myclntsock.send(srvr.v)
+    if fileName not in file_pointers:
+        conn.send("Closed " + fileName + " successfully!")
+    else:
+        conn.send("Failed to close " + fileName)
 
-        self.myclntsock.close()
-
+    return
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind(('', int(sys.argv[1])))
+
 s.listen(5)
-#s.setblocking(0)
-
-myThreads = []
-
-
+#print "here"
 while True:
     conn, addr = s.accept()
-    clnt_sock = srvr(conn)
 
-    myThreads.append(clnt_sock)
-    clnt_sock.start()
+    instructions = conn.recv(1024)
+    instructions = instructions.split()
+    print instructions
 
-s.close()
+    if instructions[0] == "dopen":
+        dopen(conn, instructions[1:])
+    if instructions[0] == "dclose":
+        dclose(conn, instructions[1:])
+    if instructions[0] == "dread":
+        dread(conn, instructions[1:])
+    if instructions[0] == "dwrite":
+        dwrite(conn, instructions[1:])
+    if instructions[0] == "dseek":
+        dseek(conn, instructions[1:])
 
-for s in myThreads:
-    s.join()
-
-print "The final value of v is" , srvr.v
+    conn.close()
