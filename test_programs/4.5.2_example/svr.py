@@ -3,28 +3,27 @@
 # user can check load on machine w/o logging in
 # USAGE: python svr.py port_num
 
-import socket, sys, os
+import sys, os, socket
 
 def main():
-    ls = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    port = int(sys.argv[1])
-    ls.bind(('', port))
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    while (1):
-        ls.listen(1)
-        conn, addr = ls.accept()
+    s.bind(('', int(sys.argv[1])))
 
-        print "client is at", addr
+    while True:
+        s.listen(1)
 
-        rc = conn.recv(2)
-        ppn = os.popen(rc)
-        rl = ppn.readlines()
+        conn, addr = s.accept()
+        command = conn.recv(2)
 
+        pipe = os.popen(command)
+
+        rl = pipe.readlines()
         flo = conn.makefile('w', 0)
         flo.writelines(rl[:-1])
 
         flo.close()
         conn.close()
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

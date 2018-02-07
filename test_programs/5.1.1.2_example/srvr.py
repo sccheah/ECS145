@@ -31,11 +31,16 @@ class srvr(threading.Thread):
     # threading.Thread.start() calls threading.Thread.run()
     #       which is always overridden, as we are doing here
     def run(self):
+        global num_of_clients
+
         while True:
             # get letter from client
             k = self.myclntsock.recv(1)
 
             if k == '':
+                srvr.numclntlock.acquire()
+                num_of_clients -= 1
+                srvr.numclntlock.release()
                 break
 
             # update v in atomic manner
@@ -55,14 +60,21 @@ s.listen(5)
 #s.setblocking(0)
 
 myThreads = []
+num_of_clients = 0
 
+conn, addr = s.accept()
+clnt_sock = srvr(conn)
+myThreads.append(clnt_sock)
+clnt_sock.start()
+num_of_clients += 1
 
-while True:
+while num_of_clients > 0:
     conn, addr = s.accept()
     clnt_sock = srvr(conn)
 
     myThreads.append(clnt_sock)
     clnt_sock.start()
+    num_of_clients += 1
 
 s.close()
 

@@ -4,28 +4,25 @@
 import socket
 import sys
 
-# create socket
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   # create socket
 
-# connect to server
-host = sys.argv[1]  # server address
-port = int(sys.argv[2])  # server port
-s.connect((host, port))
+host = sys.argv[1]
+port = int(sys.argv[2])
 
-s.send(sys.argv[3]) # send test string
+s.connect((host, port))     # connect with server
 
-# read echo
-i = 0
-while (1):
-    data = s.recv(1000000)  # read up to 1000000 bytes
-    i += 1
+s.send(sys.argv[3])         # send data to server
 
-    if (i < 5): # look only at first part of message
-        print data
-    if not data:        # if end of data, leave loop
+while True:                 # loop to keep receiving data from server
+    data = s.recv(1000)     # receive up to 1000 bytes at a time
+                            # blocks til receives data
+            # when entire message received from server, recv() will return empty string
+
+    if data == '':            # if done receiving entire message, break
         break
+
+    print data              # print data from server
 
     print 'received', len(data), 'bytes'
 
-# close connection
-s.close()
+s.close()                   # close the socket
