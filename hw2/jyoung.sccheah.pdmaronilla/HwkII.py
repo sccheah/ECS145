@@ -38,8 +38,6 @@ def sysStop(hostList):
 
 #################################### CLIENT CODE #########################################
 
-hostList = []
-
 # class that acts as a file descriptor
 class FileDescriptor:
     hostList = []       # class variable to hold list of hosts
