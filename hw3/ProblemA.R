@@ -9,9 +9,6 @@ makeAscendNums <- function(x) {
     stop("not nondecreasing")
   }
   
-  # make x a class of 'ascendNums'
-  class(x) <- 'ascendNums'
-  
   # if there are any elements of y <= 0, then it is not strictly increasing
   if (any(y <= 0)){
     attr(x, 'strictAscend') <- FALSE
@@ -19,6 +16,9 @@ makeAscendNums <- function(x) {
   else {
     attr(x, 'strictAscend') <- TRUE
   }
+
+  # make x a class of 'ascendNums'
+  class(x) <- 'ascendNums'
   
   # return instance of class 'ascendNums'
   return (x)
@@ -31,6 +31,11 @@ makeAscendNums <- function(x) {
 
 # Overload '+' operator
 '+.ascendNums' <- function(x, y) {
+ 
+  # make sure both instances are of class 'ascendNums' 
+  if ((class(x) != 'ascendNums') || (class(y) != 'ascendNums')) {
+    stop("An object is not an instance of class \'ascendNums\'.")
+  }
   
   # keep track of x and y index
   x_index <- 1
